@@ -33,6 +33,7 @@ class OT2ENV(gym.Env):
         self.num_agents = num_agents
         self.render_mode = render_mode
         self.target = np.array(target)
+        self.target_threshold = 0.001
         self.max_steps = max_steps
         self.current_step = 0
 
@@ -49,7 +50,7 @@ class OT2ENV(gym.Env):
         )
 
         # Define observation space
-        obs_dim = 9 * num_agents
+        obs_dim = 9 * num_agents + 3
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float64
         )
@@ -148,6 +149,9 @@ class OT2ENV(gym.Env):
             # Pipette position
             obs.extend(robot_state["pipette_position"])
 
+        # Target position
+        obs.extend(self.target)
+
         return np.array(obs, dtype=np.float64)
 
     def _get_info(self, states: dict) -> dict:
@@ -188,15 +192,16 @@ class OT2ENV(gym.Env):
             distance = np.linalg.norm(pipette_pos - self.target)
             reward -= distance
 
+        # Bonus for reaching target
+        if self._get_distance_to_target(states) <= self.target_threshold:
+            reward += 100.0
+
         return reward
 
     def _is_terminated(self, states: dict) -> bool:
         """Check if episode should terminate."""
-        # for robot_key in states.keys():
-        #     pipette_pos = states[robot_key]["pipette_position"]
-        #     if not self._is_in_workspace(pipette_pos):
-        #         return True
-        return False
+        distance = self._get_distance_to_target(states)
+        return distance <= self.target_threshold
 
     def _is_in_workspace(self, position: np.ndarray) -> bool:
         """Check if position is within workspace limits."""
