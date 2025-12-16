@@ -8,8 +8,7 @@ import os
 import warnings
 from clearml import Task
 
-# Replace Pendulum-v1/YourName with your own project name
-task = Task.init(project_name='Pendulum-v1/YourName',
+task = Task.init(project_name='Pendulum-v1/test',
                  task_name='Experiment1_67')
 
 task.set_base_docker('deanis/2023y2b-rl:latest')
