@@ -72,14 +72,23 @@ class OT2ENV(gym.Env):
         if seed is not None:
             np.random.seed(seed)
 
-        if self.target is None:
+        # Allow target to be passed via options
+        if options is not None and "target" in options:
+            self.target = options["target"]
+        else:
             self.target = self._choose_random_target()
 
         # Reset step counter
         self.current_step = 0
 
         # Reset the simulation
-        states = self.sim.reset(num_agents=self.num_agents)
+        _ = self.sim.reset(num_agents=self.num_agents)
+
+        random_start = self._choose_random_target()
+
+        # Set pipette to a random starting position within the workspace
+        self.sim.set_start_position(*random_start)
+        states = self.sim.get_states()
 
         obs = self._get_obs(states)
         info = self._get_info(states)
