@@ -10,7 +10,7 @@ Usage:
 
 from ot2_env import OT2ENV
 import numpy as np
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 def main():
     # Initialize environment
@@ -26,13 +26,12 @@ def main():
     all_rewards = []
     episode_lengths = []
     distances = []
-    success_count = []
+    success_count = 0
 
     # Run test episodes
     for episode in range(num_episodes):
         obs, info = env.reset()
         done = False
-        step = 0
         steps = 0
         episode_reward = 0
 
@@ -41,11 +40,9 @@ def main():
         while not done:
             # Random action
             action = env.action_space.sample()
-            print(f"    Step: {step + 1}, Action: {action}")
 
             # Perform a step
             obs, reward, terminated, truncated, info = env.step(action)
-            print(f"    Reward: {reward}")
 
             # Track metrics
             all_rewards.append(reward)
@@ -66,7 +63,7 @@ def main():
             print(f"  Truncated at {steps} steps (distance: {info['distance_to_target']:.6f}m)")
 
     # Summary
-    print("SUMMARY")
+    print("\nSUMMARY")
     print(f"  Episodes: {num_episodes}")
     print(f"  Successful: {success_count}")
     print(f"  Avg episode length: {np.mean(episode_lengths):.1f} steps")
@@ -74,30 +71,31 @@ def main():
     print(f"  Min distance achieved: {np.mean(distances):.6f}m")
 
     #  # Create plots
-    # fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
     
-    # axes[0].plot(all_rewards)
-    # axes[0].set_title('Rewards Over Time')
-    # axes[0].set_xlabel('Step')
-    # axes[0].set_ylabel('Reward')
-    # axes[0].grid(True, alpha=0.3)
+    axes[0].plot(all_rewards)
+    axes[0].set_title('Rewards Over Time')
+    axes[0].set_xlabel('Step')
+    axes[0].set_ylabel('Reward')
+    axes[0].grid(True, alpha=0.3)
     
-    # axes[1].bar(range(num_episodes), episode_lengths)
-    # axes[1].set_title('Episode Lengths')
-    # axes[1].set_xlabel('Episode')
-    # axes[1].set_ylabel('Steps')
-    # axes[1].grid(True, alpha=0.3)
+    axes[1].bar(range(num_episodes), episode_lengths)
+    axes[1].set_title('Episode Lengths')
+    axes[1].set_xlabel('Episode')
+    axes[1].set_ylabel('Steps')
+    axes[1].grid(True, alpha=0.3)
     
-    # axes[2].plot(distances)
-    # axes[2].axhline(y=0.01, color='r', linestyle='--', label='Threshold')
-    # axes[2].set_title('Distance to Target')
-    # axes[2].set_xlabel('Step')
-    # axes[2].set_ylabel('Distance (m)')
-    # axes[2].legend()
-    # axes[2].grid(True, alpha=0.3)
+    axes[2].plot(distances)
+    axes[2].axhline(y=0.01, color='r', linestyle='--', label='Threshold')
+    axes[2].set_title('Distance to Target')
+    axes[2].set_xlabel('Step')
+    axes[2].set_ylabel('Distance (m)')
+    axes[2].legend()
+    axes[2].grid(True, alpha=0.3)
     
-    # plt.tight_layout()
-    # plt.show()
+    plt.tight_layout()
+    plt.savefig('test_wrapper_results.png', dpi=150)
+    print("\nPlots saved to 'test_wrapper_results.png'")
 
     env.close()
     print("Test complete!")
