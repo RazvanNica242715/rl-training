@@ -19,21 +19,22 @@ class OT2ENV(gym.Env):
         - Discrete control for drop action (0 or 1)
     """
 
-    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 120}
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 240}
 
     def __init__(
         self,
         num_agents: int = 1,
         render_mode: str | None = None,
-        target: np.ndarray = np.array([0.0, 0.0, 0.1]),
+        target: np.ndarray | None = None,
+        target_threshold: int = 0.01,
         max_steps: int = 1000,
     ) -> None:
         super().__init__()
 
         self.num_agents = num_agents
         self.render_mode = render_mode
-        self.target = np.array(target)
-        self.target_threshold = 0.001
+        self.target = np.array(target) if target else None
+        self.target_threshold = target_threshold
         self.max_steps = max_steps
         self.current_step = 0
 
@@ -44,8 +45,8 @@ class OT2ENV(gym.Env):
 
         # Define action space for each agent: [x_velocity, y_velocity, z_velocity, drop]
         self.action_space = spaces.Box(
-            low=np.array([-1.0, -1.0, -1.0, 0.0] * num_agents),
-            high=np.array([1.0, 1.0, 1.0, 1.0] * num_agents),
+            low=np.array([-1.0, -1.0, -1.0] * num_agents),
+            high=np.array([1.0, 1.0, 1.0] * num_agents),
             dtype=np.float64,
         )
 
@@ -70,6 +71,9 @@ class OT2ENV(gym.Env):
 
         if seed is not None:
             np.random.seed(seed)
+
+        if self.target in None:
+            self.target = self._choose_random_target()
 
         # Reset step counter
         self.current_step = 0
@@ -167,6 +171,12 @@ class OT2ENV(gym.Env):
             info["pipette_positions"][robot_key] = states[robot_key]["pipette_position"]
 
         return info
+    
+    def _choose_random_target(self) -> np.ndarray:
+        random_point = []
+        for _, limits in self.workspace_limits.items():
+            random_point.append(np.random.uniform(limits[0], limits[1]))
+        return np.array(random_point)
 
     def _get_distance_to_target(self, states: dict) -> float:
         """Calculate distance from pipette to target (for first agent)."""
