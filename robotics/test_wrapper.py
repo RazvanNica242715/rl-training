@@ -10,7 +10,7 @@ Usage:
 
 from ot2_env import OT2ENV
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 def main():
     # Initialize environment
@@ -33,6 +33,7 @@ def main():
         obs, info = env.reset()
         done = False
         step = 0
+        steps = 0
         episode_reward = 0
 
         print(f"  Episode: {episode + 1}, Target: {env.target}")
@@ -72,31 +73,31 @@ def main():
     print(f"  Reward - Mean: {np.mean(all_rewards):.3f}, Std: {np.std(all_rewards):.3f}")
     print(f"  Min distance achieved: {np.mean(distances):.6f}m")
 
-     # Create plots
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+    #  # Create plots
+    # fig, axes = plt.subplots(1, 3, figsize=(15, 4))
     
-    axes[0].plot(all_rewards)
-    axes[0].set_title('Rewards Over Time')
-    axes[0].set_xlabel('Step')
-    axes[0].set_ylabel('Reward')
-    axes[0].grid(True, alpha=0.3)
+    # axes[0].plot(all_rewards)
+    # axes[0].set_title('Rewards Over Time')
+    # axes[0].set_xlabel('Step')
+    # axes[0].set_ylabel('Reward')
+    # axes[0].grid(True, alpha=0.3)
     
-    axes[1].bar(range(num_episodes), episode_lengths)
-    axes[1].set_title('Episode Lengths')
-    axes[1].set_xlabel('Episode')
-    axes[1].set_ylabel('Steps')
-    axes[1].grid(True, alpha=0.3)
+    # axes[1].bar(range(num_episodes), episode_lengths)
+    # axes[1].set_title('Episode Lengths')
+    # axes[1].set_xlabel('Episode')
+    # axes[1].set_ylabel('Steps')
+    # axes[1].grid(True, alpha=0.3)
     
-    axes[2].plot(distances)
-    axes[2].axhline(y=0.01, color='r', linestyle='--', label='Threshold')
-    axes[2].set_title('Distance to Target')
-    axes[2].set_xlabel('Step')
-    axes[2].set_ylabel('Distance (m)')
-    axes[2].legend()
-    axes[2].grid(True, alpha=0.3)
+    # axes[2].plot(distances)
+    # axes[2].axhline(y=0.01, color='r', linestyle='--', label='Threshold')
+    # axes[2].set_title('Distance to Target')
+    # axes[2].set_xlabel('Step')
+    # axes[2].set_ylabel('Distance (m)')
+    # axes[2].legend()
+    # axes[2].grid(True, alpha=0.3)
     
-    plt.tight_layout()
-    plt.show()
+    # plt.tight_layout()
+    # plt.show()
 
     env.close()
     print("Test complete!")

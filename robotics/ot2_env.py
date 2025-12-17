@@ -122,16 +122,15 @@ class OT2ENV(gym.Env):
         actions = []
 
         for i in range(self.num_agents):
-            start_idx = i * 4
-            agent_action = action[start_idx : start_idx + 4]
+            start_idx = i * 3
+            agent_action = action[start_idx : start_idx + 3]
 
             # Clip velocities
-            agent_action[:3] = np.clip(agent_action[:3], -1.0, 1.0)
+            agent_action = np.clip(agent_action, -1.0, 1.0)
 
-            # Threshold drop action (>0.5 means drop)
-            agent_action[3] = 1.0 if agent_action[3] > 0.5 else 0.0
-
-            actions.append(agent_action.tolist())
+            agent_action = agent_action.tolist()
+            agent_action.append(0)
+            actions.append(agent_action)
 
         return np.array(actions)
 
@@ -171,7 +170,7 @@ class OT2ENV(gym.Env):
             info["pipette_positions"][robot_key] = states[robot_key]["pipette_position"]
 
         return info
-    
+
     def _choose_random_target(self) -> np.ndarray:
         random_point = []
         for _, limits in self.workspace_limits.items():
