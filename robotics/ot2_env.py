@@ -37,6 +37,7 @@ class OT2ENV(gym.Env):
         self.target_threshold = target_threshold
         self.max_steps = max_steps
         self.current_step = 0
+        self._last_distance = None
 
         # Initialize the simulation
         render = render_mode == "human"
@@ -80,6 +81,9 @@ class OT2ENV(gym.Env):
 
         # Reset step counter
         self.current_step = 0
+
+        # Reset the last distance
+        self._last_distance = None
 
         # Reset the simulation
         _ = self.sim.reset(num_agents=self.num_agents)
@@ -198,19 +202,31 @@ class OT2ENV(gym.Env):
 
         for i, robot_key in enumerate(sorted(states.keys())):
             pipette_pos = np.array(states[robot_key]["pipette_position"])
+            current_distance = np.linalg.norm(pipette_pos - self.target)
 
-            # Penalty for going out of bounds
+            # Distance improvement reward
+            if self._last_distance is not None:
+                improvement = self._last_distance - current_distance
+                reward += improvement * 20.0
+            
+            # Update last distance for next
+            self._last_distance = current_distance
+
+            # Proximity bonus
+            proximity_bonus = np.exp(-5.0 * current_distance)
+            reward += proximity_bonus * 2.0
+
+            # Base distance penalty
+            reward -= current_distance * 5.0
+            
+            # Out of bounds penalty
             if not self._is_in_workspace(pipette_pos):
                 reward -= 100.0
 
-            # Small step penalty to encourage efficiency
-            reward -= 0.01
+            # Small time penalty (encourage efficiency)
+            reward -= 0.1
 
-            # Distance-based reward (negative distance)
-            distance = np.linalg.norm(pipette_pos - self.target)
-            reward -= distance
-
-        # Bonus for reaching target
+        # Success bonus
         if self._get_distance_to_target(states) <= self.target_threshold:
             reward += 100.0
 
