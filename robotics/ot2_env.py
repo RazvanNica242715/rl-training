@@ -72,7 +72,7 @@ class OT2ENV(gym.Env):
         if seed is not None:
             np.random.seed(seed)
 
-        if self.target in None:
+        if self.target is None:
             self.target = self._choose_random_target()
 
         # Reset step counter
