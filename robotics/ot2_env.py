@@ -26,7 +26,7 @@ class OT2ENV(gym.Env):
         num_agents: int = 1,
         render_mode: str | None = None,
         target: np.ndarray | None = None,
-        target_threshold: int = 0.01,
+        target_threshold: int = 0.001,
         max_steps: int = 1000,
     ) -> None:
         super().__init__()
@@ -79,6 +79,8 @@ class OT2ENV(gym.Env):
         else:
             self.target = self._choose_random_target()
 
+        print(f"Target: {self.target}")
+
         # Reset step counter
         self.current_step = 0
 
@@ -89,6 +91,7 @@ class OT2ENV(gym.Env):
         _ = self.sim.reset(num_agents=self.num_agents)
 
         random_start = self._choose_random_target()
+        print(f"Start: {random_start}")
 
         # Set pipette to a random starting position within the workspace
         self.sim.set_start_position(*random_start)
@@ -113,7 +116,7 @@ class OT2ENV(gym.Env):
         obs = self._get_obs(states)
 
         # Calculate reward
-        reward = self._compute_reward(states, actions)
+        reward = self._compute_reward(states)
 
         # Check termination conditions
         terminated = self._is_terminated(states)
@@ -196,7 +199,7 @@ class OT2ENV(gym.Env):
         pipette_pos = np.array(states[robot_key]["pipette_position"])
         return np.linalg.norm(pipette_pos - self.target)
 
-    def _compute_reward(self, states: dict, actions: np.ndarray) -> float:
+    def _compute_reward(self, states: dict) -> float:
         """Compute reward based on the current state and actions."""
         reward = 0.0
 
