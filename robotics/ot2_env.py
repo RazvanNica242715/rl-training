@@ -16,10 +16,9 @@ class OT2ENV(gym.Env):
 
     Action Space:
         - Continuous control for x, y, z velocities
-        - Discrete control for drop action (0 or 1)
     """
 
-    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 240}
+    metadata = {"render_modes": ["human", "rgb_array", "none"], "render_fps": 240}
 
     def __init__(
         self,
@@ -267,7 +266,7 @@ register(
     entry_point="ot2_env:OT2ENV",
     kwargs={
         "num_agents": 1,
-        "render_mode": "human",
+        "render_mode": "none",
         "target": [0.0, 0.0, 0.1],
         "max_steps": 1000,
     },
