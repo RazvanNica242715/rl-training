@@ -26,7 +26,7 @@ class OT2ENV(gym.Env):
         num_agents: int = 1,
         render_mode: str | None = None,
         target: np.ndarray | None = None,
-        target_threshold: int = 0.001,
+        target_threshold: float = 0.001,
         max_steps: int = 1000,
     ) -> None:
         super().__init__()
@@ -79,7 +79,7 @@ class OT2ENV(gym.Env):
         else:
             self.target = self._choose_random_target()
 
-        print(f"Target: {self.target}")
+        # print(f"Target: {self.target}")
 
         # Reset step counter
         self.current_step = 0
@@ -91,7 +91,7 @@ class OT2ENV(gym.Env):
         _ = self.sim.reset(num_agents=self.num_agents)
 
         random_start = self._choose_random_target()
-        print(f"Start: {random_start}")
+        # print(f"Start: {random_start}")
 
         # Set pipette to a random starting position within the workspace
         self.sim.set_start_position(*random_start)
@@ -211,7 +211,7 @@ class OT2ENV(gym.Env):
             if self._last_distance is not None:
                 improvement = self._last_distance - current_distance
                 reward += improvement * 20.0
-            
+
             # Update last distance for next
             self._last_distance = current_distance
 
@@ -221,7 +221,7 @@ class OT2ENV(gym.Env):
 
             # Base distance penalty
             reward -= current_distance * 5.0
-            
+
             # Out of bounds penalty
             if not self._is_in_workspace(pipette_pos):
                 reward -= 100.0
