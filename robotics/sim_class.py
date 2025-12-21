@@ -1,8 +1,8 @@
 import logging
 import math
+import os
 import random
 import time
-import os
 from pathlib import Path
 
 import pybullet as p
@@ -34,11 +34,15 @@ class Simulation:
         plates_dir = ROBOTICS_DIR / "textures/_plates"
 
         # Sort both lists to ensure consistent ordering
-        texture_list = sorted([f for f in os.listdir(texture_dir) if f.endswith(".png")])
+        texture_list = sorted(
+            [f for f in os.listdir(texture_dir) if f.endswith(".png")]
+        )
         plate_list = sorted([f for f in os.listdir(plates_dir) if f.endswith(".png")])
 
         # Verify they have the same length
-        assert len(texture_list) == len(plate_list), f"Mismatch: {len(texture_list)} textures vs {len(plate_list)} plates"
+        assert len(texture_list) == len(plate_list), (
+            f"Mismatch: {len(texture_list)} textures vs {len(plate_list)} plates"
+        )
 
         # Choose the SAME random index for both
         random_index = random.randint(0, len(plate_list) - 1)
@@ -516,20 +520,20 @@ class Simulation:
                 #             logging.info(f'sphereId: {sphereId}, collision disabled with sphereId2: {sphereId2}')
 
     def set_start_position(self, x, y, z):
-        # Iterate through each robot and set its pipette to the start position
         for robotId in self.robotIds:
-            # Calculate the necessary joint positions to reach the desired start position
-            # The calculation depends on the kinematic model of the robot
-            # For simplicity, let's assume a simple model where each joint moves in one axis (x, y, z)
-            # You might need to adjust this based on the actual robot kinematics
-
-            # Adjust the x, y, z values based on the robot's current position and pipette offset
             robot_position = p.getBasePositionAndOrientation(robotId)[0]
-            adjusted_x = x - robot_position[0] - self.pipette_offset[0]
-            adjusted_y = y - robot_position[1] - self.pipette_offset[1]
+
+            # Mirror the logic from get_states:
+            # pipette_x = robot_pos_x - joint_0_pos + offset_x
+            # Therefore: joint_0_pos = robot_pos_x + offset_x - x
+            adjusted_x = robot_position[0] + self.pipette_offset[0] - x
+            adjusted_y = robot_position[1] + self.pipette_offset[1] - y
+
+            # Z is additive in get_states: pipette_z = robot_pos_z + joint_2_pos + offset_z
+            # Therefore: joint_2_pos = z - robot_pos_z - offset_z
             adjusted_z = z - robot_position[2] - self.pipette_offset[2]
 
-            # Reset the joint positions/start position
+            # Reset the joint positions
             p.resetJointState(robotId, 0, targetValue=adjusted_x)
             p.resetJointState(robotId, 1, targetValue=adjusted_y)
             p.resetJointState(robotId, 2, targetValue=adjusted_z)

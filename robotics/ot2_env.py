@@ -11,8 +11,9 @@ class OT2ENV(gym.Env):
 
     Observation Space:
         - Joint positions (3 per agent)
-        - Joint velocities (3 per agent)
+        - Relative Vector (3 per agent)
         - Pipette position (3 per agent)
+        - Target
 
     Action Space:
         - Continuous control for x, y, z velocities
@@ -51,16 +52,16 @@ class OT2ENV(gym.Env):
         )
 
         # Define observation space
-        obs_dim = 9 * num_agents + 3
+        obs_dim = (9 * num_agents) + 3
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float64
         )
 
         # Workspace limits (with small margin for safety)
         self.workspace_limits = {
-            "x": (-0.187, 0.253),
-            "y": (-0.1705, 0.2195),
-            "z": (0.1194, 0.2896),
+            "x": (-0.1875, 0.2532),
+            "y": (-0.17010, 0.2198),
+            "z": (0.1195, 0.2903),
         }
 
     def reset(
@@ -153,22 +154,30 @@ class OT2ENV(gym.Env):
         """Convert simulation states to observation array."""
         obs = []
 
+        # Normalize Target
+        norm_target = self._normalize_position(self.target)
+
         for robot_key in sorted(states.keys()):
             robot_state = states[robot_key]
 
-            # Joint positions
-            for i in range(3):
-                obs.append(robot_state["joint_states"][f"joint_{i}"]["position"])
+            # 1. Normalize Pipette Position
+            pipette_pos = np.array(robot_state["pipette_position"])
+            norm_pipette = self._normalize_position(pipette_pos)
 
-            # Joint velocities
-            for i in range(3):
-                obs.append(robot_state["joint_states"][f"joint_{i}"]["velocity"])
+            # 2. Relative Vector(Target - Pipette)
+            relative_vector = norm_target - norm_pipette
 
-            # Pipette position
-            obs.extend(robot_state["pipette_position"])
+            # 3. Joint velocities (Already -1 to 1, no scaling needed)
+            velocities = [
+                robot_state["joint_states"][f"joint_{i}"]["velocity"] for i in range(3)
+            ]
+            # Assemble: 3 (vel) + 3 (pipette) + 3 (rel_vector) = 9 per agent
+            obs.extend(velocities)
+            obs.extend(norm_pipette)
+            obs.extend(relative_vector)
 
-        # Target position
-        obs.extend(self.target)
+        # Target position: + 3
+        obs.extend(norm_target)
 
         return np.array(obs, dtype=np.float64)
 
@@ -188,8 +197,11 @@ class OT2ENV(gym.Env):
 
     def _choose_random_target(self) -> np.ndarray:
         random_point = []
+        margin = 0.005  # 5mm safety margin from the physical limits
         for _, limits in self.workspace_limits.items():
-            random_point.append(np.random.uniform(limits[0], limits[1]))
+            random_point.append(
+                np.random.uniform(limits[0] + margin, limits[1] - margin)
+            )
         return np.array(random_point)
 
     def _get_distance_to_target(self, states: dict) -> float:
@@ -204,40 +216,36 @@ class OT2ENV(gym.Env):
 
         for i, robot_key in enumerate(sorted(states.keys())):
             pipette_pos = np.array(states[robot_key]["pipette_position"])
-            current_distance = np.linalg.norm(pipette_pos - self.target)
+            dist = np.linalg.norm(pipette_pos - self.target)
 
-            # Distance improvement reward
-            if self._last_distance is not None:
-                improvement = self._last_distance - current_distance
-                reward += improvement * 20.0
+            # Main Reward (Negative Distance)
+            reward -= dist * 10.0  # Scale the distance
 
-            # Update last distance for next
-            self._last_distance = current_distance
+            # Precision Bonus
+            if dist < 0.02:
+                reward += 1.0 / (dist + 0.005)
 
-            # Proximity bonus
-            proximity_bonus = np.exp(-5.0 * current_distance)
-            reward += proximity_bonus * 2.0
+            # Success Bonus
+            if dist <= self.target_threshold:
+                reward += 150.0
 
-            # Base distance penalty
-            reward -= current_distance * 5.0
-
-            # Out of bounds penalty
+            # Out of Bounds Penalty
             if not self._is_in_workspace(pipette_pos):
-                reward -= 100.0
+                reward -= 150.0
 
             # Small time penalty (encourage efficiency)
             reward -= 0.1
 
-        # Success bonus
-        if self._get_distance_to_target(states) <= self.target_threshold:
-            reward += 100.0
-
         return reward
 
     def _is_terminated(self, states: dict) -> bool:
-        """Check if episode should terminate."""
         distance = self._get_distance_to_target(states)
-        return distance <= self.target_threshold
+        robot_key = sorted(states.keys())[0]
+        pipette_pos = np.array(states[robot_key]["pipette_position"])
+
+        # Terminate if target reached OR if out of bounds
+        out_of_bounds = not self._is_in_workspace(pipette_pos)
+        return (distance <= self.target_threshold) or out_of_bounds
 
     def _is_in_workspace(self, position: np.ndarray) -> bool:
         """Check if position is within workspace limits."""
@@ -246,6 +254,21 @@ class OT2ENV(gym.Env):
             self.workspace_limits["x"][0] <= x <= self.workspace_limits["x"][1]
             and self.workspace_limits["y"][0] <= y <= self.workspace_limits["y"][1]
             and self.workspace_limits["z"][0] <= z <= self.workspace_limits["z"][1]
+        )
+
+    def _scale_value(self, val, limits):
+        """Helper to scale a single value to [-1, 1]"""
+        low, high = limits
+        return 2 * (val - low) / (high - low) - 1
+
+    def _normalize_position(self, pos: np.ndarray) -> np.ndarray:
+        """Helper to scale a 3D point to [-1, 1] range."""
+        return np.array(
+            [
+                self._scale_value(pos[0], self.workspace_limits["x"]),
+                self._scale_value(pos[1], self.workspace_limits["y"]),
+                self._scale_value(pos[2], self.workspace_limits["z"]),
+            ]
         )
 
     def render(self):
@@ -267,7 +290,7 @@ register(
     kwargs={
         "num_agents": 1,
         "render_mode": "none",
-        "target": [0.0, 0.0, 0.1],
+        "target": None,
         "max_steps": 1000,
     },
 )
