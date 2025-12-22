@@ -1,5 +1,57 @@
 # RL Training - Dean Group 1
 
+
+## Setting Up
+
+Weights & Biases is a cloud-based platform, so you don’t need to install anything on your local machine (you can run a W&B server locally as well if you prefer). However, you do need to install the W&B Python package in your Python environment. Here’s how to get started:
+
+**Installation:**
+
+```bash
+pip install wandb
+```
+
+**Create an Account:**
+- Sign up at the [W&B website](https://wandb.ai/) to create your account.
+
+**Authentication:**
+- After signing up, use the following command in your terminal:
+
+```bash
+wandb login
+```
+
+- A browser window will open asking you to authenticate your account - or you will be asked to provide an API which you can create on the W&B website in your user account settings.
+
+Install the ClearML package and initialize the configuration file. Run the following commands in the terminal (make sure you are in the correct virtual environment):
+
+```bash
+pip install clearml
+
+clearml-init
+```
+
+Copy these credentials when prompted:
+
+```
+api { 
+    web_server: http://194.171.191.227:8080
+    api_server: http://194.171.191.227:8008
+    files_server: http://194.171.191.227:8081
+    # Students
+    credentials {
+        "access_key" = "UJODYOFVELU1XCB7OFM2FKU7XCY48K"
+        "secret_key"  = "OKCS8xT-vngmYWgpIMYsu_GbS2fLgMmMp1MbzqyLZdWZtA-FGxlUJ5KGISFGPMdcDDk"
+    }
+}
+```
+
+Leave all other settings as default.
+
+Note: You need to be connected to the VPN to queue jobs and access the dashboard.
+
+---
+
 ## Student 1 (Filip): Learning Rate Variations
 
 ```bash
@@ -105,7 +157,7 @@ python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_
 
 **Focus:** Find optimal PPO-specific parameters (clipping and optimization iterations)
 
-##  Network Architecture (If Time)
+##  Network Architecture (If Time - Assign Name and Notify Others)
 
 ```bash
 # Smaller network (faster)
