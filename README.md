@@ -56,19 +56,19 @@ Note: You need to be connected to the VPN to queue jobs and access the dashboard
 
 ```bash
 # Config 1.1: Baseline
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_1.1
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_1.1 --wandb_key="KEY"
 
 # Config 1.2: Lower LR
-python train_rl.py --learning_rate 0.0001 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_1.2
+python train_rl.py --learning_rate 0.0001 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_1.2 --wandb_key="KEY"
 
 # Config 1.3: Higher LR
-python train_rl.py --learning_rate 0.001 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_1.3
+python train_rl.py --learning_rate 0.001 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_1.3 --wandb_key="KEY"
 
 # Config 1.4: Very high LR
-python train_rl.py --learning_rate 0.003 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_1.4
+python train_rl.py --learning_rate 0.003 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_1.4 --wandb_key="KEY"
 
 # Config 1.5: Adaptive (lower LR + more epochs)
-python train_rl.py --learning_rate 0.0001 --batch_size 64 --n_steps 2048 --n_epochs 20 --experiment_name PPO_Experiment_1.5
+python train_rl.py --learning_rate 0.0001 --batch_size 64 --n_steps 2048 --n_epochs 20 --experiment_name PPO_Experiment_1.5 --wandb_key="KEY"
 ```
 
 **Focus:** Find optimal learning rate (0.0001 to 0.003 range)
@@ -77,19 +77,19 @@ python train_rl.py --learning_rate 0.0001 --batch_size 64 --n_steps 2048 --n_epo
 
 ```bash
 # Config 2.1: Small batch
-python train_rl.py --learning_rate 0.0003 --batch_size 32 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_2.1
+python train_rl.py --learning_rate 0.0003 --batch_size 32 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_2.1 --wandb_key="KEY"
 
 # Config 2.2: Baseline
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_2.2
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_2.2 --wandb_key="KEY"
 
 # Config 2.3: Large batch
-python train_rl.py --learning_rate 0.0003 --batch_size 128 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_2.3
+python train_rl.py --learning_rate 0.0003 --batch_size 128 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_2.3 --wandb_key="KEY"
 
 # Config 2.4: Very large batch + adjusted LR
-python train_rl.py --learning_rate 0.0005 --batch_size 256 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_2.4
+python train_rl.py --learning_rate 0.0005 --batch_size 256 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_2.4 --wandb_key="KEY"
 
 # Config 2.5: Large batch + more epochs
-python train_rl.py --learning_rate 0.0003 --batch_size 128 --n_steps 2048 --n_epochs 15 --experiment_name PPO_Experiment_2.5
+python train_rl.py --learning_rate 0.0003 --batch_size 128 --n_steps 2048 --n_epochs 15 --experiment_name PPO_Experiment_2.5 --wandb_key="KEY"
 ```
 
 **Focus:** Find optimal batch size (32 to 256 range) and interaction with epochs
@@ -98,19 +98,19 @@ python train_rl.py --learning_rate 0.0003 --batch_size 128 --n_steps 2048 --n_ep
 
 ```bash
 # Config 3.1: Short rollouts
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 1024 --n_epochs 10 --experiment_name PPO_Experiment_3.1
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 1024 --n_epochs 10 --experiment_name PPO_Experiment_3.1 --wandb_key="KEY"
 
 # Config 3.2: Baseline
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_3.2
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --n_epochs 10 --experiment_name PPO_Experiment_3.2 --wandb_key="KEY"
 
 # Config 3.3: Long rollouts
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 4096 --n_epochs 10 --experiment_name PPO_Experiment_3.3
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 4096 --n_epochs 10 --experiment_name PPO_Experiment_3.3 --wandb_key="KEY"
 
 # Config 3.4: Very long rollouts
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 8192 --n_epochs 10 --experiment_name PPO_Experiment_3.4
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 8192 --n_epochs 10 --experiment_name PPO_Experiment_3.4 --wandb_key="KEY"
 
 # Config 3.5: Long rollouts + fewer epochs
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 4096 --n_epochs 5 --experiment_name PPO_Experiment_3.5
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 4096 --n_epochs 5 --experiment_name PPO_Experiment_3.5 --wandb_key="KEY"
 ```
 
 **Focus:** Find optimal experience collection (1024 to 8192 steps per update)
@@ -119,19 +119,19 @@ python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 4096 --n_epo
 
 ```bash
 # Config 4.1: Low gamma (prioritize immediate rewards)
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.90 --gae_lambda 0.90 --experiment_name PPO_Experiment_4.1
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.90 --gae_lambda 0.90 --experiment_name PPO_Experiment_4.1 --wandb_key="KEY"
 
 # Config 4.2: Medium-low gamma
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --experiment_name PPO_Experiment_4.2
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --experiment_name PPO_Experiment_4.2 --wandb_key="KEY"
 
 # Config 4.3: Baseline (high gamma)
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --experiment_name PPO_Experiment_4.3
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --experiment_name PPO_Experiment_4.3 --wandb_key="KEY"
 
 # Config 4.4: Very high gamma
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.995 --gae_lambda 0.98 --experiment_name PPO_Experiment_4.4
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.995 --gae_lambda 0.98 --experiment_name PPO_Experiment_4.4 --wandb_key="KEY"
 
 # Config 4.5: Mismatched (high gamma, low lambda)
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.85 --experiment_name PPO_Experiment_4.5
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.85 --experiment_name PPO_Experiment_4.5 --wandb_key="KEY"
 ```
 
 **Focus:** Find optimal discount factors (how much to value future rewards)
@@ -140,19 +140,19 @@ python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma
 
 ```bash
 # Config 5.1: Conservative clipping
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.1 --n_epochs 10 --experiment_name PPO_Experiment_5.1
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.1 --n_epochs 10 --experiment_name PPO_Experiment_5.1 --wandb_key="KEY"
 
 # Config 5.2: Baseline
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Experiment_5.2
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Experiment_5.2 --wandb_key="KEY"
 
 # Config 5.3: Aggressive clipping
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.3 --n_epochs 10 --experiment_name PPO_Experiment_5.3
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.3 --n_epochs 10 --experiment_name PPO_Experiment_5.3 --wandb_key="KEY"
 
 # Config 5.4: Many epochs (more optimization)
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.2 --n_epochs 20 --experiment_name PPO_Experiment_5.4
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.2 --n_epochs 20 --experiment_name PPO_Experiment_5.4 --wandb_key="KEY"
 
 # Config 5.5: Few epochs (faster updates)
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.2 --n_epochs 5 --experiment_name PPO_Experiment_5.5
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --clip_range 0.2 --n_epochs 5 --experiment_name PPO_Experiment_5.5 --wandb_key="KEY"
 ```
 
 **Focus:** Find optimal PPO-specific parameters (clipping and optimization iterations)
