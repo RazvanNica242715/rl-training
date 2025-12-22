@@ -7,6 +7,7 @@ Uses Weights & Biases for experiment tracking and ClearML for remote training.
 import gymnasium as gym
 import numpy as np
 import wandb
+import os
 import argparse
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback
@@ -19,6 +20,9 @@ from clearml import Task
 def parse_args():
     """Parse command line arguments for hyperparameters"""
     parser = argparse.ArgumentParser()
+    
+    # wandb key
+    parser.add_argument("--wandb_key", type=str, default="")
     
     # Hyperparameters
     parser.add_argument("--learning_rate", type=float, default=0.0003)
@@ -49,6 +53,9 @@ def parse_args():
 def main():
     args = parse_args()
     
+    # WANDB KEY - for this specific case, NOT RECOMMENDED
+    os.environ['WANDB_API_KEY'] = args.wandb_key
+
     # Initialize ClearML (for remote training)
     task = Task.init(
         project_name='Mentor Group - Dean/Group 1',
