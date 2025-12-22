@@ -52,7 +52,7 @@ def main():
             done = terminated or truncated
 
             # Validate spaces
-            assert env.observation_space.contains(obs), "Observation out of"
+            assert env.observation_space.contains(obs), "Observation out of bounds!"
             assert env.action_space.contains(action), "Action out of bounds!"
 
         episode_lengths.append(steps)
