@@ -53,19 +53,18 @@ def parse_args():
 def main():
     args = parse_args()
 
+    # WANDB KEY - for this specific case, NOT RECOMMENDED
+    os.environ['WANDB_API_KEY'] = args.wandb_key
+
     # Initialize ClearML (for remote training)
     task = Task.init(
         project_name='Mentor Group - Dean/Group 1',
         task_name=args.experiment_name
     )
-    
-    task.add_requirements('numpy', '1.24.3')
 
     task.set_base_docker('deanis/2023y2b-rl:latest')
+    task.set_packages(['tensorboard', 'clearml'])
     task.execute_remotely(queue_name="default")
-    
-    # WANDB KEY - for this specific case, NOT RECOMMENDED
-    os.environ['WANDB_API_KEY'] = args.wandb_key
 
     # Initialize Weights & Biases
     run = wandb.init(
