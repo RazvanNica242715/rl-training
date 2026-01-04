@@ -63,7 +63,7 @@ def main():
     )
 
     task.set_base_docker('deanis/2023y2b-rl:latest')
-    task.set_packages(['tensorboard', 'clearml'])
+    task.set_packages(['tensorboard', 'clearml', 'wandb'])
     task.execute_remotely(queue_name="default")
 
     # Initialize Weights & Biases
