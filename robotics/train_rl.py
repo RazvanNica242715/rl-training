@@ -172,14 +172,17 @@ class RewardLoggingCallback(BaseCallback):
         # Access the environment (unwrap if needed)
         env = self.training_env.envs[0]
         
+        # Unwrap VecEnv wrappers to get to the actual environment
+        while hasattr(env, 'env'):
+            env = env.env
+        
         # Log step-level metrics
         if hasattr(env, 'current_reward'):
-
             wandb.log({
                 "step/current_reward": env.current_reward,
                 "step/current_step": env.current_step,
                 "step/global_step": self.step_count,
-            })
+            }, step=self.step_count)
                 
         return True
 
