@@ -164,20 +164,20 @@ class RewardLoggingCallback(BaseCallback):
         self.episode_steps = []
         
     def _on_step(self) -> bool:
-        """
-        Called after each environment step
-        """
         self.step_count += 1
         
-        # Access the environment (unwrap if needed)
-        env = self.training_env.envs[0]
+        # Get the actual environment from VecEnv
+        if hasattr(self.training_env, 'envs'):
+            env = self.training_env.envs[0]
+        else:
+            env = self.training_env
         
-        # Unwrap VecEnv wrappers to get to the actual environment
+        # Unwrap to get to the actual custom environment
         while hasattr(env, 'env'):
             env = env.env
         
         # Log step-level metrics
-        if hasattr(env, 'current_reward'):
+        if hasattr(env, 'current_reward') and hasattr(env, 'current_step'):
             wandb.log({
                 "step/current_reward": env.current_reward,
                 "step/current_step": env.current_step,
