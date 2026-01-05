@@ -159,14 +159,15 @@ class RewardLoggingCallback(BaseCallback):
     """
     def __init__(self, verbose=0):
         super(RewardLoggingCallback, self).__init__(verbose)
-        self.step_count = 0
-        self.episode_rewards = []
-        self.episode_steps = []
+        self.episode_count = 0
+        self.episode_reward = 0
+        self.episode_length = 0
         
     def _on_step(self) -> bool:
-        self.step_count += 1
-        
-        # Get the actual environment from VecEnv
+        """
+        Called after each environment step
+        """
+        # Get the actual environment
         if hasattr(self.training_env, 'envs'):
             env = self.training_env.envs[0]
         else:
@@ -176,15 +177,28 @@ class RewardLoggingCallback(BaseCallback):
         while hasattr(env, 'env'):
             env = env.env
         
-        # Log step-level metrics
-        if hasattr(env, 'current_reward') and hasattr(env, 'current_step'):
+        # Accumulate episode reward
+        if hasattr(env, 'current_reward'):
+            self.episode_reward += env.current_reward
+            self.episode_length += 1
+        
+        # Check if episode is done
+        dones = self.locals.get('dones')
+        if dones is not None and dones[0]:
+            self.episode_count += 1
+            
+            # Log episode metrics
             wandb.log({
-                "step/current_reward": env.current_reward,
-                "step/current_step": env.current_step,
-                "step/global_step": self.step_count,
-            }, step=self.step_count)
+                "episode/reward": self.episode_reward,
+                "episode/length": self.episode_length,
+                "episode/number": self.episode_count,
+            }, step=self.num_timesteps)
+            
+            # Reset for next episode
+            self.episode_reward = 0
+            self.episode_length = 0
                 
         return True
-
+    
 if __name__ == "__main__":
     main()
