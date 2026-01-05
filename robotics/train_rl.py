@@ -127,14 +127,14 @@ def main():
         verbose=2
     )
 
-    # reward_callback = RewardLoggingCallback(verbose=1)
+    reward_callback = RewardLoggingCallback(verbose=1)
 
     
     # Train
     print("\nStarting training...")
     model.learn(
         total_timesteps=args.total_timesteps,
-        callback=[checkpoint_callback, wandb_callback],
+        callback=[checkpoint_callback, wandb_callback, reward_callback],
         progress_bar=True,
         tb_log_name=f"runs/{run.id}"
     )
