@@ -174,24 +174,12 @@ class RewardLoggingCallback(BaseCallback):
         
         # Log step-level metrics
         if hasattr(env, 'current_reward'):
-            
+
             wandb.log({
                 "step/current_reward": env.current_reward,
                 "step/current_step": env.current_step,
                 "step/global_step": self.step_count,
             })
-        
-        # Check if episode is done
-        if self.locals.get('dones') is not None and self.locals['dones'][0]:
-            # Log episode-level metrics
-            if hasattr(env, 'current_reward') and hasattr(env, 'current_step'):
-                self.episode_rewards.append(env.current_reward)
-                self.episode_steps.append(env.current_step)
-                
-                wandb.log({
-                    "episode/total_reward": env.current_reward,
-                    "episode/episode_length": env.current_step,
-                })
                 
         return True
 
