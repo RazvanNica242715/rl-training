@@ -174,14 +174,11 @@ class RewardLoggingCallback(BaseCallback):
         
         # Log step-level metrics
         if hasattr(env, 'current_reward'):
-            current_pos = env.get_current_position()
-            distance_to_target = np.linalg.norm(current_pos - env.target)
-
+            
             wandb.log({
                 "step/current_reward": env.current_reward,
                 "step/current_step": env.current_step,
                 "step/global_step": self.step_count,
-                "step/distance_to_target": distance_to_target,
             })
         
         # Check if episode is done
