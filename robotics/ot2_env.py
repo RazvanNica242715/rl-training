@@ -37,6 +37,7 @@ class OT2ENV(gym.Env):
         self.target_threshold = target_threshold
         self.max_steps = max_steps
         self.current_step = 0
+        self.current_reward = 0
         self._last_distance = None
 
         # Initialize the simulation
@@ -236,6 +237,7 @@ class OT2ENV(gym.Env):
             # Small time penalty (encourage efficiency)
             reward -= 0.1
 
+        self.current_reward = reward
         return reward
 
     def _is_terminated(self, states: dict) -> bool:

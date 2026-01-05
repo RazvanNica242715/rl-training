@@ -10,6 +10,7 @@ import wandb
 import os
 import argparse
 from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import CheckpointCallback
 from wandb.integration.sb3 import WandbCallback
 from ot2_env import OT2ENV
@@ -125,12 +126,15 @@ def main():
         model_save_path=f"models/{run.id}",
         verbose=2
     )
+
+    reward_callback = RewardLoggingCallback(verbose=1)
+
     
     # Train
     print("\nStarting training...")
     model.learn(
         total_timesteps=args.total_timesteps,
-        callback=[checkpoint_callback, wandb_callback],
+        callback=[checkpoint_callback, wandb_callback, reward_callback],
         progress_bar=True,
         tb_log_name=f"runs/{run.id}"
     )
@@ -147,6 +151,52 @@ def main():
     
     env.close()
     run.finish()
+
+
+class RewardLoggingCallback(BaseCallback):
+    """
+    Custom callback for logging environment metrics to wandb
+    """
+    def __init__(self, verbose=0):
+        super(RewardLoggingCallback, self).__init__(verbose)
+        self.step_count = 0
+        self.episode_rewards = []
+        self.episode_steps = []
+        
+    def _on_step(self) -> bool:
+        """
+        Called after each environment step
+        """
+        self.step_count += 1
+        
+        # Access the environment (unwrap if needed)
+        env = self.training_env.envs[0]
+        
+        # Log step-level metrics
+        if hasattr(env, 'current_reward'):
+            current_pos = env.get_current_position()
+            distance_to_target = np.linalg.norm(current_pos - env.target)
+
+            wandb.log({
+                "step/current_reward": env.current_reward,
+                "step/current_step": env.current_step,
+                "step/global_step": self.step_count,
+                "step/distance_to_target": distance_to_target,
+            })
+        
+        # Check if episode is done
+        if self.locals.get('dones') is not None and self.locals['dones'][0]:
+            # Log episode-level metrics
+            if hasattr(env, 'current_reward') and hasattr(env, 'current_step'):
+                self.episode_rewards.append(env.current_reward)
+                self.episode_steps.append(env.current_step)
+                
+                wandb.log({
+                    "episode/total_reward": env.current_reward,
+                    "episode/episode_length": env.current_step,
+                })
+                
+        return True
 
 if __name__ == "__main__":
     main()
