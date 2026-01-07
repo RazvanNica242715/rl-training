@@ -54,99 +54,99 @@ Note: You need to be connected to the VPN to queue jobs and access the dashboard
 ## Strategy: Randomized Grid Search
 To capture the complex interactions between hyperparameters, we have moved away from isolated variable testing. Each team member is assigned 5 unique combinations sampled from a multi-dimensional parameter grid.
 
-## Student 1 (Filip): Learning Rate Variations
+## Student 1 (Filip)
 
 ```bash
 # Config 1.1
-python train_rl.py --learning_rate 0.0003 --batch_size 128 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Rand_1.1 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0003 --batch_size 128 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 10 --experiment_name "PPO_Rand_1.1" --wandb_key="KEY"
 
 # Config 1.2
-python train_rl.py --learning_rate 0.0001 --batch_size 64 --n_steps 4096 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.1 --n_epochs 20 --experiment_name PPO_Rand_1.2 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0001 --batch_size 64 --n_steps 4096 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.1 --n_epochs 20 --experiment_name "PPO_Rand_1.2" --wandb_key="KEY"
 
 # Config 1.3
-python train_rl.py --learning_rate 0.001 --batch_size 256 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 10 --experiment_name PPO_Rand_1.3 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.001 --batch_size 256 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 10 --experiment_name "PPO_Rand_1.3" --wandb_key="KEY"
 
 # Config 1.4
-python train_rl.py --learning_rate 0.0005 --batch_size 128 --n_steps 4096 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Rand_1.4 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0005 --batch_size 128 --n_steps 4096 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name "PPO_Rand_1.4" --wandb_key="KEY"
 
 # Config 1.5
-python train_rl.py --learning_rate 0.0001 --batch_size 256 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.1 --n_epochs 20 --experiment_name PPO_Rand_1.5 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0001 --batch_size 256 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.1 --n_epochs 20 --experiment_name "PPO_Rand_1.5" --wandb_key="KEY"
 ```
 
-## Student 2 (Leon): Batch Size Variations
+## Student 2 (Leon)
 
 ```bash
 # Config 2.1
-python train_rl.py --learning_rate 0.0005 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 20 --experiment_name PPO_Rand_2.1 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0005 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 20 --experiment_name "PPO_Rand_2.1" --wandb_key="KEY"
 
 # Config 2.2
-python train_rl.py --learning_rate 0.0003 --batch_size 256 --n_steps 4096 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Rand_2.2 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0003 --batch_size 256 --n_steps 4096 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name "PPO_Rand_2.2" --wandb_key="KEY"
 
 # Config 2.3
-python train_rl.py --learning_rate 0.0001 --batch_size 128 --n_steps 2048 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.1 --n_epochs 10 --experiment_name PPO_Rand_2.3 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0001 --batch_size 128 --n_steps 2048 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.1 --n_epochs 10 --experiment_name "PPO_Rand_2.3" --wandb_key="KEY"
 
 # Config 2.4
-python train_rl.py --learning_rate 0.001 --batch_size 64 --n_steps 4096 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 20 --experiment_name PPO_Rand_2.4 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.001 --batch_size 64 --n_steps 4096 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 20 --experiment_name "PPO_Rand_2.4" --wandb_key="KEY"
 
 # Config 2.5
-python train_rl.py --learning_rate 0.0003 --batch_size 128 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 20 --experiment_name PPO_Rand_2.5 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0003 --batch_size 128 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 20 --experiment_name "PPO_Rand_2.5" --wandb_key="KEY"
 ```
 
-## Student 3 (Erik): Rollout Steps (n_steps) Variations
+## Student 3 (Erik)
 
 ```bash
 # Config 3.1
-python train_rl.py --learning_rate 0.0001 --batch_size 256 --n_steps 4096 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Rand_3.1 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0001 --batch_size 256 --n_steps 4096 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 10 --experiment_name "PPO_Rand_3.1" --wandb_key="KEY"
 
 # Config 3.2
-python train_rl.py --learning_rate 0.0005 --batch_size 128 --n_steps 2048 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.1 --n_epochs 20 --experiment_name PPO_Rand_3.2 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0005 --batch_size 128 --n_steps 2048 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.1 --n_epochs 20 --experiment_name "PPO_Rand_3.2" --wandb_key="KEY"
 
 # Config 3.3
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 4096 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 10 --experiment_name PPO_Rand_3.3 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 4096 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 10 --experiment_name "PPO_Rand_3.3" --wandb_key="KEY"
 
 # Config 3.4
-python train_rl.py --learning_rate 0.001 --batch_size 256 --n_steps 4096 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 20 --experiment_name PPO_Rand_3.4 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.001 --batch_size 256 --n_steps 4096 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 20 --experiment_name "PPO_Rand_3.4" --wandb_key="KEY"
 
 # Config 3.5
-python train_rl.py --learning_rate 0.0005 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Rand_3.5 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0005 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name "PPO_Rand_3.5" --wandb_key="KEY"
 ```
 
-## Student 4 (Razvan): Gamma and GAE Lambda (Discount Factors)
+## Student 4 (Razvan)
 
 ```bash
 # Config 4.1
-python train_rl.py --learning_rate 0.0001 --batch_size 128 --n_steps 4096 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 20 --experiment_name PPO_Rand_4.1 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0001 --batch_size 128 --n_steps 4096 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 20 --experiment_name "PPO_Rand_4.1" --wandb_key="KEY"
 
 # Config 4.2
-python train_rl.py --learning_rate 0.001 --batch_size 128 --n_steps 2048 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Rand_4.2 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.001 --batch_size 128 --n_steps 2048 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name "PPO_Rand_4.2" --wandb_key="KEY"
 
 # Config 4.3
-python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.1 --n_epochs 20 --experiment_name PPO_Rand_4.3 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.1 --n_epochs 20 --experiment_name "PPO_Rand_4.3" --wandb_key="KEY"
 
 # Config 4.4
-python train_rl.py --learning_rate 0.0005 --batch_size 256 --n_steps 4096 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 10 --experiment_name PPO_Rand_4.4 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0005 --batch_size 256 --n_steps 4096 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 10 --experiment_name "PPO_Rand_4.4" --wandb_key="KEY"
 
 # Config 4.5
-python train_rl.py --learning_rate 0.0001 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Rand_4.5 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0001 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 10 --experiment_name "PPO_Rand_4.5" --wandb_key="KEY"
 ```
 
-## Student 5 (Andrii): Clip Range and Epochs
+## Student 5 (Andrii)
 
 ```bash
 # Config 5.1
-python train_rl.py --learning_rate 0.0003 --batch_size 256 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.1 --n_epochs 10 --experiment_name PPO_Rand_5.1 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0003 --batch_size 256 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.1 --n_epochs 10 --experiment_name "PPO_Rand_5.1" --wandb_key="KEY"
 
 # Config 5.2
-python train_rl.py --learning_rate 0.0005 --batch_size 128 --n_steps 4096 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.3 --n_epochs 20 --experiment_name PPO_Rand_5.2 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0005 --batch_size 128 --n_steps 4096 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.3 --n_epochs 20 --experiment_name "PPO_Rand_5.2" --wandb_key="KEY"
 
 # Config 5.3
-python train_rl.py --learning_rate 0.001 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 10 --experiment_name PPO_Rand_5.3 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.001 --batch_size 64 --n_steps 2048 --gamma 0.99 --gae_lambda 0.95 --clip_range 0.2 --n_epochs 10 --experiment_name "PPO_Rand_5.3" --wandb_key="KEY"
 
 # Config 5.4
-python train_rl.py --learning_rate 0.0001 --batch_size 256 --n_steps 4096 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 20 --experiment_name PPO_Rand_5.4 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0001 --batch_size 256 --n_steps 4096 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.2 --n_epochs 20 --experiment_name "PPO_Rand_5.4" --wandb_key="KEY"
 
 # Config 5.5
-python train_rl.py --learning_rate 0.0005 --batch_size 64 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.1 --n_epochs 10 --experiment_name PPO_Rand_5.5 --wandb_key="KEY"
+python train_rl.py --learning_rate 0.0005 --batch_size 64 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.1 --n_epochs 10 --experiment_name "PPO_Rand_5.5" --wandb_key="KEY"
 ```
 
 ## Parameters Explained (Grid Boundaries)
