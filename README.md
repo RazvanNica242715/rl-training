@@ -147,6 +147,15 @@ python train_rl.py --learning_rate 0.0001 --batch_size 256 --n_steps 4096 --gamm
 
 # Config 5.5
 python train_rl.py --learning_rate 0.0005 --batch_size 64 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.1 --n_epochs 10 --experiment_name "PPO_Rand_5.5" --wandb_key="KEY"
+
+# Config 5.6
+python train_rl.py --learning_rate 0.001 --batch_size 256 --n_steps 4096 --gamma 0.99 --gae_lambda 0.98 --clip_range 0.1 --n_epochs 20 --experiment_name "PPO_Rand_5.6" --wandb_key="KEY"
+
+# Config 5.7
+python train_rl.py --learning_rate 0.0003 --batch_size 64 --n_steps 4096 --gamma 0.95 --gae_lambda 0.98 --clip_range 0.3 --n_epochs 10 --experiment_name "PPO_Rand_5.7" --wandb_key="KEY"
+
+# Config 5.8
+python train_rl.py --learning_rate 0.0001 --batch_size 128 --n_steps 2048 --gamma 0.95 --gae_lambda 0.95 --clip_range 0.3 --n_epochs 10 --experiment_name "PPO_Rand_5.8" --wandb_key="KEY"
 ```
 
 ## Parameters Explained (Grid Boundaries)
