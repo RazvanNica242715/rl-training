@@ -159,7 +159,6 @@ class RewardLoggingCallback(BaseCallback):
     """
     def __init__(self, verbose=0):
         super(RewardLoggingCallback, self).__init__(verbose)
-        self.episode_count = 0
         self.episode_reward = 0
         self.episode_length = 0
         
@@ -180,18 +179,15 @@ class RewardLoggingCallback(BaseCallback):
         # Accumulate episode reward
         if hasattr(env, 'current_reward'):
             self.episode_reward += env.current_reward
-            self.episode_length += 1
+            self.episode_length = env.current_step
         
         # Check if episode is done
-        dones = self.locals.get('dones')
-        if dones is not None and dones[0]:
-            self.episode_count += 1
-            
+        done = env.current_step == 0
+        if done:
             # Log episode metrics
             wandb.log({
-                "episode/reward": self.episode_reward,
+                "episode/reward_mean": (self.episode_reward / self.episode_length),
                 "episode/length": self.episode_length,
-                "episode/number": self.episode_count,
             }, step=self.num_timesteps)
             
             # Reset for next episode
