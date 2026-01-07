@@ -126,15 +126,12 @@ def main():
         model_save_path=f"models/{run.id}",
         verbose=2
     )
-
-    reward_callback = RewardLoggingCallback(verbose=1)
-
     
     # Train
     print("\nStarting training...")
     model.learn(
         total_timesteps=args.total_timesteps,
-        callback=[checkpoint_callback, wandb_callback, reward_callback],
+        callback=[checkpoint_callback, wandb_callback],
         progress_bar=True,
         tb_log_name=f"runs/{run.id}"
     )
@@ -151,50 +148,6 @@ def main():
     
     env.close()
     run.finish()
-
-
-class RewardLoggingCallback(BaseCallback):
-    """
-    Custom callback for logging environment metrics to wandb
-    """
-    def __init__(self, verbose=0):
-        super(RewardLoggingCallback, self).__init__(verbose)
-        self.episode_reward = 0
-        self.episode_length = 0
-        
-    def _on_step(self) -> bool:
-        """
-        Called after each environment step
-        """
-        # Get the actual environment
-        if hasattr(self.training_env, 'envs'):
-            env = self.training_env.envs[0]
-        else:
-            env = self.training_env
-        
-        # Unwrap to get to the actual custom environment
-        while hasattr(env, 'env'):
-            env = env.env
-        
-        # Accumulate episode reward
-        if hasattr(env, 'current_reward'):
-            self.episode_reward += env.current_reward
-            self.episode_length = env.current_step
-        
-        # Check if episode is done
-        done = env.current_step == 0
-        if done:
-            # Log episode metrics
-            wandb.log({
-                "episode/reward_mean": (self.episode_reward / self.episode_length),
-                "episode/length": self.episode_length,
-            }, step=self.num_timesteps)
-            
-            # Reset for next episode
-            self.episode_reward = 0
-            self.episode_length = 0
-                
-        return True
     
 if __name__ == "__main__":
     main()
