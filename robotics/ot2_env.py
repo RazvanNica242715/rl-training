@@ -85,6 +85,11 @@ class OT2ENV(gym.Env):
 
         # Reset the last distance
         self._last_distance = None
+        self._milestones_reached = {
+            "10mm": False,
+            "5mm": False,
+            "2mm": False,
+        }
 
         # Reset the simulation
         _ = self.sim.reset(num_agents=self.num_agents)
@@ -129,7 +134,6 @@ class OT2ENV(gym.Env):
         info["distance_to_target"] = distance
 
         return obs, reward, terminated, truncated, info
-
 
     def _process_action(self, action: np.ndarray) -> np.ndarray:
         """Convert flat action array to list of actions per agent."""
@@ -210,35 +214,36 @@ class OT2ENV(gym.Env):
         return np.linalg.norm(pipette_pos - self.target)
 
     def _compute_reward(self, states: dict) -> float:
-        """Improved reward function for precise positioning."""
+        """Fixed reward function - milestones only fire once."""
         reward = 0.0
 
         for i, robot_key in enumerate(sorted(states.keys())):
             pipette_pos = np.array(states[robot_key]["pipette_position"])
             dist = np.linalg.norm(pipette_pos - self.target)
 
-            # 1. DENSE SHAPING: Reward for getting closer (delta-based)
+            # 1. DENSE SHAPING: Reward for getting closer
             if self._last_distance is not None:
-                # Positive reward for reducing distance, negative for increasing
                 delta = self._last_distance - dist
-                reward += delta * 100.0  # Scale appropriately
-            
+                reward += delta * 100.0
+
             self._last_distance = dist
 
-            # 2. EXPONENTIAL PRECISION BONUS: Gets much larger as you get closer
-            # At dist=0.01: ~2.7, at dist=0.005: ~7.4, at dist=0.001: ~148
-            precision_reward = np.exp(-dist / 0.005) * 2.0
+            # 2. EXPONENTIAL PRECISION BONUS (keep this, it's fine per-step)
+            precision_reward = np.exp(-dist / 0.005) * 0.5  # Reduced from 2.0
             reward += precision_reward
 
-            # 3. MILESTONE BONUSES: Discrete rewards for reaching thresholds
-            if dist < 0.01:  # Within 1cm
-                reward += 5.0
-            if dist < 0.005:  # Within 5mm
+            # 3. MILESTONE BONUSES: Only fire ONCE per episode
+            if dist < 0.01 and not self._milestones_reached["10mm"]:
                 reward += 10.0
-            if dist < 0.002:  # Within 2mm
+                self._milestones_reached["10mm"] = True
+            if dist < 0.005 and not self._milestones_reached["5mm"]:
                 reward += 20.0
+                self._milestones_reached["5mm"] = True
+            if dist < 0.002 and not self._milestones_reached["2mm"]:
+                reward += 50.0
+                self._milestones_reached["2mm"] = True
 
-            # 4. SUCCESS BONUS
+            # 4. SUCCESS BONUS (termination)
             if dist <= self.target_threshold:
                 reward += 200.0
 
@@ -246,8 +251,8 @@ class OT2ENV(gym.Env):
             if not self._is_in_workspace(pipette_pos):
                 reward -= 100.0
 
-            # 6. SMALL TIME PENALTY (encourages efficiency)
-            reward -= 0.05
+            # 6. TIME PENALTY (increase this to discourage slowness)
+            reward -= 0.5  # Increased from 0.05
 
         self.current_reward = reward
         return reward
@@ -262,16 +267,22 @@ class OT2ENV(gym.Env):
 
     def _is_in_workspace(self, position: np.ndarray, tolerance: float = 0.01) -> bool:
         """Check if position is within workspace limits.
-        
+
         Args:
             position: The (x, y, z) position to check
             tolerance: Buffer zone in meters (default 1cm) to allow slight overruns
         """
         x, y, z = position
         return (
-            self.workspace_limits["x"][0] - tolerance <= x <= self.workspace_limits["x"][1] + tolerance
-            and self.workspace_limits["y"][0] - tolerance <= y <= self.workspace_limits["y"][1] + tolerance
-            and self.workspace_limits["z"][0] - tolerance <= z <= self.workspace_limits["z"][1] + tolerance
+            self.workspace_limits["x"][0] - tolerance
+            <= x
+            <= self.workspace_limits["x"][1] + tolerance
+            and self.workspace_limits["y"][0] - tolerance
+            <= y
+            <= self.workspace_limits["y"][1] + tolerance
+            and self.workspace_limits["z"][0] - tolerance
+            <= z
+            <= self.workspace_limits["z"][1] + tolerance
         )
 
     def _scale_value(self, val, limits):
