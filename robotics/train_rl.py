@@ -4,19 +4,19 @@ RL Training Script for OT-2 Controller
 Uses Weights & Biases for experiment tracking and ClearML for remote training.
 """
 
-import gymnasium as gym
-import numpy as np
 import wandb
 import os
 import argparse
 from stable_baselines3 import PPO
-from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import CheckpointCallback
+from train_stats import TrainingStatsCallback
 from wandb.integration.sb3 import WandbCallback
 from ot2_env import OT2ENV
 
 # For ClearML remote training
 from clearml import Task
+
+
 
 def parse_args():
     """Parse command line arguments for hyperparameters"""
@@ -45,11 +45,13 @@ def parse_args():
     parser.add_argument("--total_timesteps", type=int, default=5000000)
     parser.add_argument("--save_freq", type=int, default=50000)
     parser.add_argument("--max_episode_steps", type=int, default=1000)
+    parser.add_argument("--stats_freq", type=int, default=5000)
     
     # Experiment naming
     parser.add_argument("--experiment_name", type=str, default="PPO_Experiment")
     
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
@@ -127,11 +129,13 @@ def main():
         verbose=2
     )
     
+    stats_callback = TrainingStatsCallback(check_freq=args.stats_freq)
+    
     # Train
     print("\nStarting training...")
     model.learn(
         total_timesteps=args.total_timesteps,
-        callback=[checkpoint_callback, wandb_callback],
+        callback=[checkpoint_callback, wandb_callback, stats_callback],
         progress_bar=True,
         tb_log_name=f"runs/{run.id}"
     )
@@ -140,6 +144,17 @@ def main():
     final_path = f"models/{run.id}/final_model"
     model.save(final_path)
     print(f"\nModel saved: {final_path}")
+    
+    # Print final training summary
+    print("\n" + "=" * 60)
+    print("FINAL TRAINING SUMMARY")
+    print("=" * 60)
+    print(f"Total episodes: {stats_callback.total_episodes}")
+    if stats_callback.total_episodes > 0:
+        print(f"Success rate: {100*stats_callback.successes/stats_callback.total_episodes:.1f}%")
+        print(f"Best min distance achieved: {min(stats_callback.min_distances):.6f}m")
+    print(f"Target threshold: {env.target_threshold}m")
+    print("=" * 60)
     
     # Upload to ClearML
     task.upload_artifact("final_model", artifact_object=f"{final_path}.zip")

@@ -27,7 +27,7 @@ class OT2ENV(gym.Env):
         render_mode: str | None = None,
         target: np.ndarray | None = None,
         target_threshold: float = 0.001,
-        max_steps: int = 1000,
+        max_steps: int = 5000,
     ) -> None:
         super().__init__()
 
@@ -80,8 +80,6 @@ class OT2ENV(gym.Env):
         else:
             self.target = self._choose_random_target()
 
-        # print(f"Target: {self.target}")
-
         # Reset step counter
         self.current_step = 0
 
@@ -92,7 +90,6 @@ class OT2ENV(gym.Env):
         _ = self.sim.reset(num_agents=self.num_agents)
 
         random_start = self._choose_random_target()
-        # print(f"Start: {random_start}")
 
         # Set pipette to a random starting position within the workspace
         self.sim.set_start_position(*random_start)
@@ -132,6 +129,7 @@ class OT2ENV(gym.Env):
         info["distance_to_target"] = distance
 
         return obs, reward, terminated, truncated, info
+
 
     def _process_action(self, action: np.ndarray) -> np.ndarray:
         """Convert flat action array to list of actions per agent."""
@@ -212,30 +210,44 @@ class OT2ENV(gym.Env):
         return np.linalg.norm(pipette_pos - self.target)
 
     def _compute_reward(self, states: dict) -> float:
-        """Compute reward based on the current state and actions."""
+        """Improved reward function for precise positioning."""
         reward = 0.0
 
         for i, robot_key in enumerate(sorted(states.keys())):
             pipette_pos = np.array(states[robot_key]["pipette_position"])
             dist = np.linalg.norm(pipette_pos - self.target)
 
-            # Main Reward (Negative Distance)
-            reward -= dist * 10.0  # Scale the distance
+            # 1. DENSE SHAPING: Reward for getting closer (delta-based)
+            if self._last_distance is not None:
+                # Positive reward for reducing distance, negative for increasing
+                delta = self._last_distance - dist
+                reward += delta * 100.0  # Scale appropriately
+            
+            self._last_distance = dist
 
-            # Precision Bonus
-            if dist < 0.02:
-                reward += 1.0 / (dist + 0.005)
+            # 2. EXPONENTIAL PRECISION BONUS: Gets much larger as you get closer
+            # At dist=0.01: ~2.7, at dist=0.005: ~7.4, at dist=0.001: ~148
+            precision_reward = np.exp(-dist / 0.005) * 2.0
+            reward += precision_reward
 
-            # Success Bonus
+            # 3. MILESTONE BONUSES: Discrete rewards for reaching thresholds
+            if dist < 0.01:  # Within 1cm
+                reward += 5.0
+            if dist < 0.005:  # Within 5mm
+                reward += 10.0
+            if dist < 0.002:  # Within 2mm
+                reward += 20.0
+
+            # 4. SUCCESS BONUS
             if dist <= self.target_threshold:
-                reward += 150.0
+                reward += 200.0
 
-            # Out of Bounds Penalty
+            # 5. OUT OF BOUNDS PENALTY
             if not self._is_in_workspace(pipette_pos):
-                reward -= 150.0
+                reward -= 100.0
 
-            # Small time penalty (encourage efficiency)
-            reward -= 0.1
+            # 6. SMALL TIME PENALTY (encourages efficiency)
+            reward -= 0.05
 
         self.current_reward = reward
         return reward
@@ -245,17 +257,21 @@ class OT2ENV(gym.Env):
         robot_key = sorted(states.keys())[0]
         pipette_pos = np.array(states[robot_key]["pipette_position"])
 
-        # Terminate if target reached OR if out of bounds
         out_of_bounds = not self._is_in_workspace(pipette_pos)
         return (distance <= self.target_threshold) or out_of_bounds
 
-    def _is_in_workspace(self, position: np.ndarray) -> bool:
-        """Check if position is within workspace limits."""
+    def _is_in_workspace(self, position: np.ndarray, tolerance: float = 0.01) -> bool:
+        """Check if position is within workspace limits.
+        
+        Args:
+            position: The (x, y, z) position to check
+            tolerance: Buffer zone in meters (default 1cm) to allow slight overruns
+        """
         x, y, z = position
         return (
-            self.workspace_limits["x"][0] <= x <= self.workspace_limits["x"][1]
-            and self.workspace_limits["y"][0] <= y <= self.workspace_limits["y"][1]
-            and self.workspace_limits["z"][0] <= z <= self.workspace_limits["z"][1]
+            self.workspace_limits["x"][0] - tolerance <= x <= self.workspace_limits["x"][1] + tolerance
+            and self.workspace_limits["y"][0] - tolerance <= y <= self.workspace_limits["y"][1] + tolerance
+            and self.workspace_limits["z"][0] - tolerance <= z <= self.workspace_limits["z"][1] + tolerance
         )
 
     def _scale_value(self, val, limits):
