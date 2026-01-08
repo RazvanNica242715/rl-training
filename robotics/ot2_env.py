@@ -27,7 +27,7 @@ class OT2ENV(gym.Env):
         render_mode: str | None = None,
         target: np.ndarray | None = None,
         target_threshold: float = 0.001,
-        max_steps: int = 5000,
+        max_steps: int = 1000,
     ) -> None:
         super().__init__()
 

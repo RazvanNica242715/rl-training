@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument("--net_arch", type=str, default="64,64")
     
     # Training settings
-    parser.add_argument("--total_timesteps", type=int, default=5000000)
+    parser.add_argument("--total_timesteps", type=int, default=2000000)
     parser.add_argument("--save_freq", type=int, default=50000)
     parser.add_argument("--max_episode_steps", type=int, default=1000)
     parser.add_argument("--stats_freq", type=int, default=5000)
