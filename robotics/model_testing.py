@@ -20,7 +20,7 @@ goal_positions = [[-0.1275, -0.1101, 0.1903], [-0.0775, -0.0101, 0.1303]]
 all_trajectories = []
 
 # Load the trained agent
-model = PPO.load("robotics\\final_model")
+model = PPO.load("artifacts/model.zip")
    
 # Get robot key
 robot_key = list(info["pipette_positions"].keys())[0]
@@ -49,7 +49,7 @@ for goal_pos in goal_positions:
         error = np.linalg.norm(obs[6:9])
         
         # Drop the inoculum if the robot is within the required error
-        if error < 0.005:
+        if error < 0.001:
             print(f"Target {goal_pos} reached!")
             break
     
