@@ -26,7 +26,7 @@ class OT2ENV(gym.Env):
         num_agents: int = 1,
         render_mode: str | None = None,
         target: np.ndarray | None = None,
-        target_threshold: float = 0.0005,  # Changed to 0.5mm
+        target_threshold: float = 0.001,
         dwell_steps: int = 10,  # Steps to stay at target (10-20 range)
         max_steps: int = 1000,
     ) -> None:
