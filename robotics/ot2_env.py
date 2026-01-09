@@ -41,9 +41,12 @@ class OT2ENV(gym.Env):
         self.current_step = 0
         self.current_reward = 0
         self._last_distance = None
-        self._steps_at_target = 0  # Counter for consecutive steps at target
-        self._last_distance = {}
-        self._milestones_reached = {}   
+        self._steps_at_target = {i: 0 for i in range(self.num_agents)}
+        self._last_distance = {i: None for i in range(self.num_agents)}
+        self._milestones_reached = {
+            i: {"10mm": False, "5mm": False, "2mm": False, "1mm": False}
+            for i in range(self.num_agents)
+        }
 
         # Initialize the simulation
         render = render_mode == "human"
@@ -85,13 +88,7 @@ class OT2ENV(gym.Env):
         else:
             self.target = self._choose_random_target()
 
-        # Reset step counter
-        self.current_step = 0
-
-        # Reset the dwell counter
         self._steps_at_target = {i: 0 for i in range(self.num_agents)}
-
-        # Reset the last distance
         self._last_distance = {i: None for i in range(self.num_agents)}
         self._milestones_reached = {
             i: {"10mm": False, "5mm": False, "2mm": False, "1mm": False}
