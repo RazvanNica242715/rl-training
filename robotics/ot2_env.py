@@ -26,7 +26,8 @@ class OT2ENV(gym.Env):
         num_agents: int = 1,
         render_mode: str | None = None,
         target: np.ndarray | None = None,
-        target_threshold: float = 0.001,
+        target_threshold: float = 0.0005,  # Changed to 0.5mm
+        dwell_steps: int = 10,  # Steps to stay at target (10-20 range)
         max_steps: int = 1000,
     ) -> None:
         super().__init__()
@@ -35,10 +36,14 @@ class OT2ENV(gym.Env):
         self.render_mode = render_mode
         self.target = np.array(target) if target else None
         self.target_threshold = target_threshold
+        self.dwell_steps = dwell_steps
         self.max_steps = max_steps
         self.current_step = 0
         self.current_reward = 0
         self._last_distance = None
+        self._steps_at_target = 0  # Counter for consecutive steps at target
+        self._last_distance = {}
+        self._milestones_reached = {}   
 
         # Initialize the simulation
         render = render_mode == "human"
@@ -83,12 +88,14 @@ class OT2ENV(gym.Env):
         # Reset step counter
         self.current_step = 0
 
+        # Reset the dwell counter
+        self._steps_at_target = {i: 0 for i in range(self.num_agents)}
+
         # Reset the last distance
-        self._last_distance = None
+        self._last_distance = {i: None for i in range(self.num_agents)}
         self._milestones_reached = {
-            "10mm": False,
-            "5mm": False,
-            "2mm": False,
+            i: {"10mm": False, "5mm": False, "2mm": False, "1mm": False}
+            for i in range(self.num_agents)
         }
 
         # Reset the simulation
@@ -121,17 +128,23 @@ class OT2ENV(gym.Env):
         # Calculate reward
         reward = self._compute_reward(states)
 
+        # Check if at target and update dwell counter
+        distance = self._get_distance_to_target(states)
+        if distance <= self.target_threshold:
+            self._steps_at_target += 1
+        else:
+            self._steps_at_target = 0  # Reset if moved away from target
+
         # Check termination conditions
         terminated = self._is_terminated(states)
-
-        # Check if target reached (distance <= threshold)
-        distance = self._get_distance_to_target(states)
 
         truncated = self.current_step >= self.max_steps
 
         # Additional info
         info = self._get_info(states)
         info["distance_to_target"] = distance
+        info["steps_at_target"] = self._steps_at_target
+        info["dwell_progress"] = f"{self._steps_at_target}/{self.dwell_steps}"
 
         return obs, reward, terminated, truncated, info
 
@@ -221,49 +234,119 @@ class OT2ENV(gym.Env):
             pipette_pos = np.array(states[robot_key]["pipette_position"])
             dist = np.linalg.norm(pipette_pos - self.target)
 
-            # 1. DENSE SHAPING: Reward for getting closer
-            if self._last_distance is not None:
-                delta = self._last_distance - dist
-                reward += delta * 100.0
+            velocities = [
+                states[robot_key]["joint_states"][f"joint_{j}"]["velocity"]
+                for j in range(3)
+            ]
+            velocity_magnitude = np.linalg.norm(velocities)
 
-            self._last_distance = dist
+            # 1: Distance Improvement (Dense Shaping)
+            if self._last_distance[i] is not None:
+                delta = self._last_distance[i] - dist
+                distance_reward = np.clip(delta * 100, -1.0, 1.0)
+                reward += distance_reward
 
-            # 2. EXPONENTIAL PRECISION BONUS (keep this, it's fine per-step)
-            precision_reward = np.exp(-dist / 0.005) * 0.5  # Reduced from 2.0
+            self._last_distance[i] = dist
+
+            # 2: Proximity Bonus (Exponential Well)
+            precision_reward = np.exp(-dist / 0.01) * 0.2
             reward += precision_reward
 
-            # 3. MILESTONE BONUSES: Only fire ONCE per episode
-            if dist < 0.01 and not self._milestones_reached["10mm"]:
-                reward += 10.0
-                self._milestones_reached["10mm"] = True
-            if dist < 0.005 and not self._milestones_reached["5mm"]:
-                reward += 20.0
-                self._milestones_reached["5mm"] = True
-            if dist < 0.002 and not self._milestones_reached["2mm"]:
-                reward += 50.0
-                self._milestones_reached["2mm"] = True
+            # 3: Velocity Penalty Near Target
+            proximity_factor = max(0, 1 - dist / 0.02)  # Active within 2cm
+            velocity_penalty = proximity_factor * velocity_magnitude * 0.3
+            reward -= velocity_penalty
 
-            # 4. SUCCESS BONUS (termination)
+            # 4: Dwell Reward (Stability)
             if dist <= self.target_threshold:
-                reward += 200.0
+                self._steps_at_target[i] += 1
+                
+                # Base reward for being at target
+                dwell_base = 0.3
+                
+                # Progressive bonus (diminishing returns)
+                # Steps 1-10 give increasing bonus, then caps
+                progress = min(self._steps_at_target[i] / self.dwell_steps, 1.0)
+                dwell_progress = progress * 0.7
+                
+                reward += dwell_base + dwell_progress
+            else:
+                # Reset counter if we leave the target zone
+                self._steps_at_target[i] = 0
 
-            # 5. OUT OF BOUNDS PENALTY
+            # 5: Milestone Bonuses (Sparse, One-Time)
+            milestones = self._milestones_reached[i]
+        
+            if dist < 0.010 and not milestones["10mm"]:  # Within 1cm
+                reward += 1.0
+                milestones["10mm"] = True
+                
+            if dist < 0.005 and not milestones["5mm"]:   # Within 5mm
+                reward += 1.5
+                milestones["5mm"] = True
+                
+            if dist < 0.002 and not milestones["2mm"]:   # Within 2mm
+                reward += 2.5
+                milestones["2mm"] = True
+                
+            if dist < 0.001 and not milestones["1mm"]:   # Within 1mm
+                reward += 4.0
+                milestones["1mm"] = True
+
+            # 6: Success Bonus (Terminal)
+            if self._steps_at_target[i] >= self.dwell_steps:
+                reward += 10.0
+
+            # 7: Boundary Penalty (Safety)
             if not self._is_in_workspace(pipette_pos):
-                reward -= 100.0
+                overshoot = self._calculate_overshoot(pipette_pos)
+                boundary_penalty = 3.0 + overshoot * 50.0
+                reward -= boundary_penalty
 
-            # 6. TIME PENALTY (increase this to discourage slowness)
-            reward -= 0.5  # Increased from 0.05
+            # 8: Time Cost (Efficiency)
+            reward -= 0.005
 
         self.current_reward = reward
         return reward
+    
+    def _calculate_overshoot(self, position: np.ndarray) -> float:
+        """
+        Calculate total distance outside workspace bounds.
+        
+        Returns sum of overshoot in each dimension (meters).
+        """
+        x, y, z = position
+        overshoot = 0.0
+        
+        # X dimension
+        if x < self.workspace_limits["x"][0]:
+            overshoot += self.workspace_limits["x"][0] - x
+        elif x > self.workspace_limits["x"][1]:
+            overshoot += x - self.workspace_limits["x"][1]
+        
+        # Y dimension
+        if y < self.workspace_limits["y"][0]:
+            overshoot += self.workspace_limits["y"][0] - y
+        elif y > self.workspace_limits["y"][1]:
+            overshoot += y - self.workspace_limits["y"][1]
+        
+        # Z dimension
+        if z < self.workspace_limits["z"][0]:
+            overshoot += self.workspace_limits["z"][0] - z
+        elif z > self.workspace_limits["z"][1]:
+            overshoot += z - self.workspace_limits["z"][1]
+        
+        return overshoot
 
     def _is_terminated(self, states: dict) -> bool:
-        distance = self._get_distance_to_target(states)
+        """Terminate when stayed at target for dwell_steps OR out of bounds."""
         robot_key = sorted(states.keys())[0]
         pipette_pos = np.array(states[robot_key]["pipette_position"])
 
         out_of_bounds = not self._is_in_workspace(pipette_pos)
-        return (distance <= self.target_threshold) or out_of_bounds
+        stayed_at_target = self._steps_at_target >= self.dwell_steps
+
+        return stayed_at_target or out_of_bounds
 
     def _is_in_workspace(self, position: np.ndarray, tolerance: float = 0.01) -> bool:
         """Check if position is within workspace limits.
