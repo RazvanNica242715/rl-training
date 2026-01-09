@@ -269,7 +269,9 @@ class OT2ENV(gym.Env):
                 reward += dwell_base + dwell_progress
             else:
                 # Reset counter if we leave the target zone
-                self._steps_at_target[i] = 0
+                    if self._steps_at_target[i] > 0:
+                        reward -= 0.5  # Penalty for leaving target zone
+                    self._steps_at_target[i] = 0
 
             # 5: Milestone Bonuses (Sparse, One-Time)
             milestones = self._milestones_reached[i]
@@ -292,7 +294,7 @@ class OT2ENV(gym.Env):
 
             # 6: Success Bonus (Terminal)
             if self._steps_at_target[i] >= self.dwell_steps:
-                reward += 10.0
+                reward += 20.0
 
             # 7: Boundary Penalty (Safety)
             if not self._is_in_workspace(pipette_pos):
@@ -301,7 +303,7 @@ class OT2ENV(gym.Env):
                 reward -= boundary_penalty
 
             # 8: Time Cost (Efficiency)
-            reward -= 0.005
+            reward -= 0.01
 
         self.current_reward = reward
         return reward
