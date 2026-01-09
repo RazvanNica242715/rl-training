@@ -88,6 +88,10 @@ class OT2ENV(gym.Env):
         else:
             self.target = self._choose_random_target()
 
+        # Reset step counter
+        self.current_step = 0  # <-- THIS WAS MISSING
+
+        # Reset reward tracking
         self._steps_at_target = {i: 0 for i in range(self.num_agents)}
         self._last_distance = {i: None for i in range(self.num_agents)}
         self._milestones_reached = {
@@ -127,10 +131,6 @@ class OT2ENV(gym.Env):
 
         # Check if at target and update dwell counter
         distance = self._get_distance_to_target(states)
-        if distance <= self.target_threshold:
-            self._steps_at_target += 1
-        else:
-            self._steps_at_target = 0  # Reset if moved away from target
 
         # Check termination conditions
         terminated = self._is_terminated(states)
@@ -140,8 +140,8 @@ class OT2ENV(gym.Env):
         # Additional info
         info = self._get_info(states)
         info["distance_to_target"] = distance
-        info["steps_at_target"] = self._steps_at_target
-        info["dwell_progress"] = f"{self._steps_at_target}/{self.dwell_steps}"
+        info["steps_at_target"] = self._steps_at_target[0]
+        info["dwell_progress"] = f"{self._steps_at_target[0]}/{self.dwell_steps}"
 
         return obs, reward, terminated, truncated, info
 
@@ -336,12 +336,11 @@ class OT2ENV(gym.Env):
         return overshoot
 
     def _is_terminated(self, states: dict) -> bool:
-        """Terminate when stayed at target for dwell_steps OR out of bounds."""
         robot_key = sorted(states.keys())[0]
         pipette_pos = np.array(states[robot_key]["pipette_position"])
 
         out_of_bounds = not self._is_in_workspace(pipette_pos)
-        stayed_at_target = self._steps_at_target >= self.dwell_steps
+        stayed_at_target = self._steps_at_target[0] >= self.dwell_steps  # Use index 0 for first agent
 
         return stayed_at_target or out_of_bounds
 
