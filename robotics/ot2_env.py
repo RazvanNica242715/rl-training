@@ -284,11 +284,11 @@ class OT2ENV(gym.Env):
                 reward += 1.5
                 milestones["5mm"] = True
                 
-            if dist < 0.002 and not milestones["2mm"]:   # Within 2mm
+            if dist <= 0.002 and not milestones["2mm"]:   # Within 2mm
                 reward += 2.5
                 milestones["2mm"] = True
                 
-            if dist < 0.001 and not milestones["1mm"]:   # Within 1mm
+            if dist <= 0.001 and not milestones["1mm"]:   # Within 1mm
                 reward += 4.0
                 milestones["1mm"] = True
 

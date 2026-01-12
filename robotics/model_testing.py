@@ -20,7 +20,7 @@ goal_positions = [[-0.1275, -0.1101, 0.1903], [-0.0775, -0.0101, 0.1303]]
 all_trajectories = []
 
 # Load the trained agent
-model = PPO.load("artifacts/model.zip")
+model = PPO.load("robotics\\final_model.zip")
    
 # Get robot key
 robot_key = list(info["pipette_positions"].keys())[0]
