@@ -11,7 +11,7 @@ import shutil
 # CONFIGURATION
 # =============================================================================
 # W&B run IDs to evaluate
-RUN_IDS = ["fhseidkq", "pavt1wmv", "n4lpr7th", "cl89vtyw"]
+RUN_IDS = ["run-1", "run-2", "run-3", "run-4", "run-5"]
 
 WANDB_PROJECT = "230395-breda-university-of-applied-sciences/ot2-rl-control"
 ARTIFACTS_DIR = "artifacts"
